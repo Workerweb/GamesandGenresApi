@@ -7,6 +7,7 @@ use App\Http\Requests\GameGenre\StoreGameGenreRequest;
 use App\Http\Requests\GameGenre\UpdateGameGenreRequest;
 use App\Http\Requests\GameGenre\AddGamesGenreRequest;
 use App\Repositories\Interfaces\GenreRepositoryInterface;
+use App\Http\Resources\Genre\GenreResource;
 
 class GameGenreController extends Controller
 {
@@ -23,10 +24,7 @@ class GameGenreController extends Controller
      */
     public function index(GenreRepositoryInterface $repository)
     {
-        return response()->json([
-            'data' => $repository->getAllGenres(),
-            'message' => ''
-        ]);
+        return GenreResource::collection($repository->getAllGenres());
     }
 
     /**
@@ -65,12 +63,9 @@ class GameGenreController extends Controller
      */
     public function store(StoreGameGenreRequest $request, GenreRepositoryInterface $repository)
     {
-        $genre = $repository->createGenre($request->validated());
-    
-        return response()->json([
-            'data' => $genre,
-            'message' => 'stored'
-        ]);
+        return (new GenreResource($repository->createGenre($request->validated())))
+                    ->response()
+                    ->setStatusCode(201);
     }
 
     /**
@@ -110,10 +105,7 @@ class GameGenreController extends Controller
      */
     public function show(Genre $genre)
     {
-        return response()->json([
-            'data' => $genre,
-            'message' => 'selected genre'
-        ]);
+        return new GenreResource($genre);
     }
 
     /**
@@ -165,12 +157,8 @@ class GameGenreController extends Controller
      */
     public function update(UpdateGameGenreRequest $request, Genre $genre, GenreRepositoryInterface $repository)
     {
-        $genre = $repository->updateGenre($genre, $request->validated());
 
-        return response()->json([
-            'data' => $genre,
-            'message' => 'updated'
-        ]);
+        return new GenreResource($repository->updateGenre($genre, $request->validated()));
     }
 
     /**
@@ -197,10 +185,7 @@ class GameGenreController extends Controller
     {
         $repository->destroyGenre($genre->id);
 
-        return response()->json([
-            'data' => '',
-            'message' => 'deleted'
-        ]);
+        return response()->noContent();
     }
 
     /**
@@ -274,11 +259,6 @@ class GameGenreController extends Controller
      */
     public function addGames(AddGamesGenreRequest $request, Genre $genre, GenreRepositoryInterface $repository)
     {
-        $genre = $repository->addGames($genre, $request->validated());
-
-        return response()->json([
-            'data' => $genre->load(['games']),
-            'message' => 'synced'
-        ]);
+        return new GenreResource($repository->addGames($genre, $request->validated())->load(['games']));
     }
 }

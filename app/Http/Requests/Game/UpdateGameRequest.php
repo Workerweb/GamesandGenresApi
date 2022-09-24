@@ -26,7 +26,7 @@ class UpdateGameRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'id' => 'required|exists:games,id',
+            'id' => 'required|exists:games,id',
             'name' => 'required|max:255|unique:games,name,' . $this->id,
             'description' => 'required'
         ];

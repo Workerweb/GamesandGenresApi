@@ -13,6 +13,8 @@ class Genre extends Model
 
     protected $fillable = ['title'];
 
+    protected $hidden = ['pivot'];
+    
     public function games ()
     {
     	return $this->belongsToMany(Game::class, 'games_has_games_genres');

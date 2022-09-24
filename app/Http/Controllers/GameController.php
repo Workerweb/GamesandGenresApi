@@ -7,6 +7,8 @@ use App\Http\Requests\Game\StoreGameRequest;
 use App\Http\Requests\Game\UpdateGameRequest;
 use App\Http\Requests\Game\AddGenresGameRequest;
 use App\Repositories\Interfaces\GameRepositoryInterface;
+use App\Http\Resources\Game\GameResource;
+
 class GameController extends Controller
 {
     /**
@@ -22,10 +24,7 @@ class GameController extends Controller
      */
     public function index(GameRepositoryInterface $repository)
     {
-        return response()->json([
-            'data' => $repository->getAllGames(),
-            'message' => ''
-        ]);
+        return GameResource::collection($repository->getAllGames());
     }
 
     /**
@@ -70,12 +69,9 @@ class GameController extends Controller
      */
     public function store(StoreGameRequest $request, GameRepositoryInterface $repository)
     {
-        $game = $repository->createGame($request->validated());
-    
-        return response()->json([
-            'data' => $game,
-            'message' => 'stored'
-        ]);
+        return (new GameResource($repository->createGame($request->validated())))
+                    ->response()
+                    ->setStatusCode(201);
     }
 
     /**
@@ -116,10 +112,7 @@ class GameController extends Controller
      */
     public function show(Game $game)
     {
-        return response()->json([
-            'data' => $game,
-            'message' => ''
-        ]);
+        return new GameResource($game);
     }
 
     /**
@@ -177,12 +170,7 @@ class GameController extends Controller
      */
     public function update(UpdateGameRequest $request, Game $game, GameRepositoryInterface $repository)
     {
-        $game = $repository->updateGame($game, $request->validated());
-
-        return response()->json([
-            'data' => $game,
-            'message' => 'updated'
-        ]);
+        return new GameResource($repository->updateGame($game, $request->validated()));
     }
 
     /**
@@ -209,10 +197,7 @@ class GameController extends Controller
     {
         $repository->destroyGame($game->id);
 
-        return response()->json([
-            'data' => '',
-            'message' => 'deleted'
-        ]); 
+        return response()->noContent();
     }
 
     /**
@@ -285,11 +270,6 @@ class GameController extends Controller
      */
     public function addGenres(AddGenresGameRequest $request, Game $game, GameRepositoryInterface $repository)
     {
-        $game = $repository->addGenres($game, $request->validated());
-
-        return response()->json([
-            'data' => $game->load(['genres']),
-            'message' => 'synced'
-        ]);
+        return new GameResource($repository->addGenres($game, $request->validated())->load(['genres']));
     }
 }

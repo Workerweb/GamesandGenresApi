@@ -26,7 +26,7 @@ class UpdateGameGenreRequest extends FormRequest
     public function rules()
     {
         return [
-            // 'id' => 'required|exists:games_genres,id',
+            'id' => 'required|exists:games_genres,id',
             'title' => 'required|max:255|unique:games_genres,title,' . $this->id,
         ];
     }
